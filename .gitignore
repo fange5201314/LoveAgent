@@ -28,6 +28,6 @@ target/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
+D:\sy_study\IDEA_object\loveAgent\src\main\java\com\example\loveagent\invoke\HttpAiInvoke.java
 ### VS Code ###
 .vscode/
