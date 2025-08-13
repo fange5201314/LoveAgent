@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,10 +22,14 @@ import java.util.logging.Logger;
 /**
  * HTTP AI调用类，用于与AI服务进行交互
  */
+@Component
 public class HttpAiInvoke {
-    private static final RestTemplate restTemplate = new RestTemplate();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Logger logger = Logger.getLogger(HttpAiInvoke.class.getName());
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Logger logger = Logger.getLogger(HttpAiInvoke.class.getName());
+    
+    @Autowired
+    private ApiConfig apiConfig;
 
     /**
      * 发送聊天请求到AI服务
@@ -32,51 +38,38 @@ public class HttpAiInvoke {
      * @return AI服务的响应结果
      * @throws IOException 如果请求过程中发生异常
      */
-    /**
-     * 发送聊天请求到AI服务
-     * @param systemPrompt 系统提示信息
-     * @param userPrompt 用户输入信息
-     * @return AI服务的响应结果
-     * @throws IOException 如果请求过程中发生异常
-     */
-    public static String sendChatRequest(String systemPrompt, String userPrompt) throws IOException {
+    public String sendChatRequest(String systemPrompt, String userPrompt) throws IOException {
         // 验证API密钥
-        String apiKey = ApiConfig.getApiKey();
-        if (apiKey.equals("your-default-api-key")) {
-            throw new IOException("API密钥未配置，请设置环境变量 DASHSCOPE_API_KEY");
+        if (!apiConfig.isApiKeyConfigured()) {
+            throw new IOException("API密钥未配置，请在application-local.yml中设置dashscope.api.key或设置环境变量DASHSCOPE_API_KEY");
         }
-        if (apiKey.isEmpty()) {
-            throw new IOException("API密钥为空，请检查环境变量 DASHSCOPE_API_KEY");
-        }
+        
         try {
             // 构建请求体
             ObjectNode requestBody = objectMapper.createObjectNode();
-            requestBody.put("model", ApiConfig.DEFAULT_MODEL);
+            requestBody.put("model", apiConfig.getDefaultModel());
             requestBody.set("messages", buildMessages(systemPrompt, userPrompt));
 
             // 设置请求头
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + TestApiKey.API_KEY);
+            headers.set("Authorization", "Bearer " + apiConfig.getApiKey());
 
             // 记录请求信息
-            logger.info("发送请求到AI服务: " + ApiConfig.API_URL);
-            logger.info("请求头: " + headers.toString());
-            logger.info("请求体: " + requestBody.toString());
+            logger.info("发送请求到AI服务: " + apiConfig.getApiUrl());
 
             // 创建请求实体
             HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
 
             // 发送请求
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    ApiConfig.API_URL,
+                    apiConfig.getApiUrl(),
                     requestEntity,
                     String.class
             );
 
             // 记录响应状态
             logger.info("响应状态码: " + response.getStatusCode());
-            logger.info("响应体: " + response.getBody());
 
             // 处理响应
             if (response.getStatusCode().is2xxSuccessful()) {
@@ -99,7 +92,7 @@ public class HttpAiInvoke {
      * @param userPrompt 用户输入信息
      * @return 消息数组JSON
      */
-    private static ArrayNode buildMessages(String systemPrompt, String userPrompt) {
+    private ArrayNode buildMessages(String systemPrompt, String userPrompt) {
         ArrayNode messages = objectMapper.createArrayNode();
 
         // 添加系统消息
@@ -115,37 +108,5 @@ public class HttpAiInvoke {
         messages.add(userMessage);
 
         return messages;
-    }
-
-    /**
-     * 主方法，用于测试AI调用
-     * @param args 命令行参数
-     */
-    /**
-     * 主方法，用于测试AI调用
-     * @param args 命令行参数
-     */
-    public static void main(String[] args) {
-        try {
-            String systemPrompt = "You are a helpful assistant.";
-            String userPrompt = "你是谁？";
-            System.out.println("发送请求到AI服务...");
-            String response = sendChatRequest(systemPrompt, userPrompt);
-            System.out.println("AI响应结果：" + response);
-        } catch (IOException e) {
-            if (e.getMessage().contains("API密钥")) {
-                System.err.println("错误: " + e.getMessage());
-                System.err.println("解决方案:");
-                System.err.println("1. 在Windows系统中，打开命令提示符并执行:");
-                System.err.println("   setx DASHSCOPE_API_KEY \"你的API密钥\"\n");
-                System.err.println("2. 重启命令提示符或IDE使环境变量生效");
-            } else {
-                System.err.println("HTTP调用失败: " + e.getMessage());
-            }
-            logger.log(Level.SEVERE, "HTTP调用失败", e);
-        } catch (Exception e) {
-            System.err.println("程序执行出错: " + e.getMessage());
-            logger.log(Level.SEVERE, "程序执行出错", e);
-        }
     }
 }
