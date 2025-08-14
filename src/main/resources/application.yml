@@ -1,6 +1,14 @@
 spring:
+  ai:
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY:sk-25c24c7ecacf41dd9da7471d89d32c15}
+      chat:
+        options:
+          model: qwen-plus
   application:
     name: loveAgent
+  profiles:
+    active: local
 server:
   port: 8123
   servlet:
@@ -22,3 +30,6 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+
+
