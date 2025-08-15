@@ -31,5 +31,19 @@ knife4j:
   setting:
     language: zh_cn
 
+logging:
+  level:
+
+# Network monitoring configuration
+network:
+  monitor:
+    endpoints:
+      hongkong: https://hk.instcopilot-api.com
+      japan: https://jp.instcopilot-api.com
+      singapore: https://sg.instcopilot-api.com
+      mainland: https://instcopilot-api.yinban.online
+    timeout: 5000
+    retries: 3
+    schedule: "0 0 8 * * ?"
 
 

@@ -38,10 +38,63 @@ application-local.yml
 application-local.yaml
 application-dev.yml
 application-dev.yaml
+application-prod.yml
+application-prod.yaml
+application-test.yml
+application-test.yaml
+
+# 环境变量文件
 *.env
+.env
 .env.*
+.environment
+
+# API密钥和认证文件
+**/TestApiKey.java
+api-keys.properties
+secrets.properties
+credentials.json
+auth.json
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+
+# 云服务配置
+aws-credentials
+gcp-service-account.json
+azure-credentials
+aliyun-credentials
+
+# 第三方服务密钥
+openai-api-key.txt
+dashscope-api-key.txt
+claude-api-key.txt
+
+# 数据库连接字符串和密码
+database.properties
+db-config.yml
+*.sql
+
+# 个人配置和IDE设置
+.vscode/settings.json
+.claude/settings.local.json
 
 # 临时文件和日志
 *.log
+*.log.*
 logs/
 temp/
+tmp/
+cache/
+
+# 系统生成文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 备份文件
+*.bak
+*.backup
+*.old
